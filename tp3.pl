@@ -77,7 +77,7 @@ localhost";
         if ($input eq $chevreUn) {
           $porteAnimateur = $chevreDeux;
           $porteAlternative = $voiture;
-        } else if ($input = eq $chevreDeux){
+        } elsif ($input eq $chevreDeux){
           $porteAnimateur = $chevreUn;
           $porteAlternative = $voiture;
         } else {
