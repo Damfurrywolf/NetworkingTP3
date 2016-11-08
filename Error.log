@@ -4,3 +4,5 @@ Erreur : L'application ne peut pas utiliser -d et -s simultanément en date et h
 Erreur : L'application ne peut pas utiliser -d et -s simultanément en date et heure du Tue Nov  8 13:57:01 2016
 
 Erreur : L'application ne peut pas utiliser -d et -s simultanément en date et heure du Tue Nov  8 13:57:02 2016
+
+Erreur : Impossible de se connecter sur le port 8080 en localhost en date et heure du Tue Nov  8 14:24:16 2016

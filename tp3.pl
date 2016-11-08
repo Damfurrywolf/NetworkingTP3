@@ -9,6 +9,7 @@ my $server=0;
 my $destinationIp = "";
 my $port = 0;
 my $help = 0;
+my $i = 0;
 #Affectation des valeurs correspondant aux options
 #inscrites à la suite de l'appel du programme
 my $options = GetOptions ("serveur" => \$server,
@@ -43,11 +44,46 @@ if ($help != 0 && $port == 0 && $server == 0 && $destinationIp == "") {
   print "-h help    : Sert à afficher le menu d'aide\n";
 }
 
-print "server = $server\n";
-print "destination ip = $destinationIp\n";
-print "port = $port\n";
+if ($server == 0){
+	my $input = "";
+	my $ligne = "";
+	my $client = IO::Socket::INET->new(Proto => "tcp",
+					PeerAddr=> $destinationIp,
+					PeerPort => $port)
+	or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
+	while($ligne ne "quit\n"){
+		#On attend les messages du server
+		$input = <$client>;
 
-if ($server) {
+		#Afficher le message du server dans la console
+		#de l'utilisateur
+
+		print $input;
+
+		#Attente que l'utilisateur entre une chaîne de charactère
+
+		$ligne = <STDIN>;
+
+		#Envoie de la chaine au server
+
+		if ($ligne eq "quit\n"){
+			print $client "quit\r\n";
+		}
+		else{
+			print $client $ligne;
+		}
+	}
+
+	#Affiche la dernière chaîne entrée
+
+	print <$client>;
+
+	#Fin de connection
+
+	close ($client);
+}
+
+if ($server == 1) {
   $serveur = IO::Socket::INET->new( Proto => "tcp",
                                     LocalPort => $port,
                                     Listen => SOMAXCONN,
@@ -60,21 +96,23 @@ if ($server) {
     $i++;
     print "Connection $i au serveur\n";
     #On envoie un mot de bienvenue à l'ordinateur distant
-    print $connection "Bienvenue au jeu de Monty Hall!\n";
-    print $connection "Une des trois portes numérotées de 1 à 3 cache\n";
-    print $connection "une voiture, les deux autres cachent une chèvres.\n";
-    print $connection "Choisissez un nombre entre 1 et 3 : ";
+
+    my $message = "Bienvenue au jeu de Monty Hall!.";#"Une des trois portes numérotées de 1 à 3 cache une voiture, les deux autres cachent une chèvres. Choisissez un nombre entre 1 et 3 :";
+
+    print $connection $message;
     #On intercepte l'information envoyé par l'ordinateur
     #distant, tant que celui-ci n'entre pas la chaine de
     #caractère quit suivie de la toucher entrée
+    =begin comment
     while($input ne "quit\r\n")
     {
+      print "All0";
       my $voiture = rand(3) + 1;
       my $chevreUn = 0;
       my $chevreDeux = 0;
 
       switch ($voiture) {
-	case 1 { $chevreUn = 2; $chevreDeux = 3;}
+	    case 1 { $chevreUn = 2; $chevreDeux = 3;}
         case 2 { $chevreUn = 1; $chevreDeux = 3;}
         case 3 { $chevreun = 1; $chevreDeux = 2;}
       }
@@ -116,6 +154,7 @@ if ($server) {
 	}
 
       }
+      =end comment
       #Affichage de la chaine dans la console du serveur
       print "$input";
       #Le serveur envoie une chaine de caractère à
@@ -128,46 +167,6 @@ if ($server) {
     #On ferme la connection
     close($connection);
   }
-}
-else{
-	my $input = "";
-	my $line = "";
-	my $connection = IO::Socke::INET->new(Proto => "tcp",
-					PeerAddrc => $destinationIp,
-					PeerPort => $port)
-	or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
-
-	while($ligne ne "quit\n"){
-		#On attend les messages du server
-
-		$input = <$connection>;
-
-		#Afficher le message du server dans la console
-		#de l'utilisateur
-
-		print $input;
-
-		#Attente que l'utilisateur entre une chaîne de charactère
-
-		$ligne = <STDIN>;
-
-		#Envoie de la chaine au server
-
-		if ($ligne eq "quit\n"){
-			print $connection "quit\r\n";
-		}
-		else{
-			print $connection $ligne;
-		}
-	}
-
-	#Affiche la dernière chaîne entrée
-
-	print <$connection>;
-
-	#Fin de connection
-
-	close ($connection);
 }
 
 sub ErrorManager {
