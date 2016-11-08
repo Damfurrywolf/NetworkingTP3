@@ -6,3 +6,13 @@ Erreur : L'application ne peut pas utiliser -d et -s simultanément en date et h
 Erreur : L'application ne peut pas utiliser -d et -s simultanément en date et heure du Tue Nov  8 13:57:02 2016
 
 Erreur : Impossible de se connecter sur le port 8080 en localhost en date et heure du Tue Nov  8 14:24:16 2016
+
+Erreur : Utiliser -s ou -d en date et heure du Mon Nov  7 21:36:41 2016
+
+Erreur : Utiliser -s ou -d en date et heure du Mon Nov  7 21:40:33 2016
+
+Erreur : Utiliser -s ou -d en date et heure du Mon Nov  7 21:40:47 2016
+
+Erreur : Utiliser -s ou -d en date et heure du Mon Nov  7 21:41:12 2016
+
+Erreur : Utiliser -s ou -d en date et heure du Mon Nov  7 21:41:20 2016
