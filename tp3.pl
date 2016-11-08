@@ -52,7 +52,7 @@ if ($server) {
                                     LocalPort => $port,
                                     Listen => SOMAXCONN,
                                     Reuse => 1)
-    or die ErrorManager("Impossible de se connecter sur le port $port en localhost");
+    or ErrorManager("Impossible de se connecter sur le port $port en localhost");
 
   while (my $connection = $serveur->accept())
   {
@@ -128,6 +128,46 @@ if ($server) {
     #On ferme la connection
     close($connection);
   }
+}
+else{
+	my $input = "";
+	my $line = "";
+	my $connection = IO::Socke::INET->new(Proto => "tcp",
+					PeerAddrc => $destinationIp,
+					PeerPort => $port)
+	or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
+
+	while($ligne ne "quit\n"){
+		#On attend les messages du server
+
+		$input = <$connection>;
+
+		#Afficher le message du server dans la console
+		#de l'utilisateur
+
+		print $input;
+
+		#Attente que l'utilisateur entre une chaîne de charactère
+
+		$ligne = <STDIN>;
+
+		#Envoie de la chaine au server
+
+		if ($ligne eq "quit\n"){
+			print $connection "quit\r\n";
+		}
+		else{
+			print $connection $ligne;
+		}
+	}
+
+	#Affiche la dernière chaîne entrée
+
+	print <$connection>;
+
+	#Fin de connection
+
+	close ($connection);
 }
 
 sub ErrorManager {
