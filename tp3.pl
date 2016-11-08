@@ -16,8 +16,8 @@ my $options = GetOptions ("serveur" => \$server,
                           "port=i" => \$port,
 			  "help" => \$help);
 #fix -d si vide
-if ($server == 0 && $destinationIp == "") {
-  die "Utiliser -s ou -d";
+if ($server == 0 && $destinationIp == "" && $help == 0) {
+  ErrorManager("Utiliser -s ou -d");
 }
 
 #On veut verifier que string is not null
@@ -25,16 +25,18 @@ if ($server != 0 && $destinationIp ne "") {
   ErrorManager("L'application ne peut pas utiliser -d et -s simultanément");
 }
 
-if ($port == 0) {
+if ($port == 0 && $help == 0) {
   ErrorManager("L'option -p est obligatoire");
 }
 
-if ($help != 0) {
+if ($help != 0 && $port == 0 && $server == 0 && $destinationIp == "") {
+  print "==================================================\n";
   print "Voici le menu d'aide pour le TP3.\n";
   print "Le TP3 consiste à reproduire le jeu de Monty Hall.\n";
   print "Pour fonctionner le programme à qu'un serveur soit exécuté.\n";
   print "Par la suite un client pourra ce connecter et choisir une porte\n";
-  print "afin de gagner une voiture ou bien une chèvre.\n\n";
+  print "afin de gagner une voiture ou bien une chèvre.\n";
+  print "==================================================\n\n";
   print "-p port    : Sert à indiquer le numéro de port (est essentiel)\n";
   print "-s serveur : Sert à indiquer que l'application sera utilisé en mode serveur\n";
   print "-d         : Sert à indiquer l'adresse de destination avec qui le client ce connectera\n";
@@ -50,7 +52,7 @@ if ($server) {
                                     LocalPort => $port,
                                     Listen => SOMAXCONN,
                                     Reuse => 1)
-    or die "Impossible de se connecter sur le port $port en localhost";
+    or die ErrorManager("Impossible de se connecter sur le port $port en localhost");
 
   while (my $connection = $serveur->accept())
   {
@@ -76,14 +78,14 @@ if ($server) {
         case 2 { $chevreUn = 1; $chevreDeux = 3;}
         case 3 { $chevreun = 1; $chevreDeux = 2;}
       }
-      
+
       #On attend que l'ordinateur distant nous envoie
       #des caractères
       $input = <$connection>;
 
       if ($input eq "3" || $input eq "2" || $input eq "1") {
 	print $connection "Vous avez choisi la porte " .$input. ".\n\n";
-        
+
         my $porteAnimateur = 0;
         my $porteAlternative = 0;
         if ($input eq $chevreUn) {
@@ -99,20 +101,20 @@ if ($server) {
 
         print $connection "Le présentateur ouvre la porte " .$porteAnimateur . ", qui cachait une chèvre !\n";
         print $connection "Garderez-vous la porte". $input." ou changerez-vous pour la porte " .$porteAlternative.".\n";
-        
+
         print $connection "Choisissez entre ".$input." (rester) et " .$porteAlternative." (changer) : ";
         my $oldInput = $input;
 
         while ($oldInput eq $input || $input eq $porteAlternative) {
           $input = <$connection>;
-        }           
-	
+        }
+
         if ($input eq $voiture) {
 	  print $connection "Félicitations! Vous avez gagné la voiture!";
 	} else {
 	  print $connection "Hélas, vous ne gagnez qu'une chèvre...";
 	}
-         
+
       }
       #Affichage de la chaine dans la console du serveur
       print "$input";
@@ -129,14 +131,14 @@ if ($server) {
 }
 
 sub ErrorManager {
-  open(OUTFILE, ">Error.log") or die "Impossible d’ouvrir
+  my $filename = "Error.log";
+  open(my $fh, ">>", $filename) or die "Impossible d’ouvrir
   Error.log en écriture : $!";
 
   my $errorMessage = @_[0];
 
-  print OUTFILE "Erreur : " .$errorMessage." en date et heure du ".localtime();
+  say $fh "\nErreur : " .$errorMessage." en date et heure du ".localtime();
 
-  close(OUTFILE);
+  close($fh);
   die $errorMessage;
-
 }
