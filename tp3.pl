@@ -15,7 +15,7 @@ my $i = 0;
 my $options = GetOptions ("serveur" => \$server,
                           "d=s" => \$destinationIp,
                           "port=i" => \$port,
-			  "help" => \$help);
+        "help" => \$help);
 #fix -d si vide
 if ($server == 0 && $destinationIp == "" && $help == 0) {
   ErrorManager("Utiliser -s ou -d");
@@ -45,48 +45,48 @@ if ($help != 0 && $port == 0 && $server == 0 && $destinationIp == "") {
 }
 
 if ($server == 0){
-	my $input = "";
-	my $ligne = "";
-	my $client = IO::Socket::INET->new(Proto => "tcp",
-					PeerAddr=> $destinationIp,
-					PeerPort => $port)
-	or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
-	print <$client>;
+  my $input = "";
+  my $ligne = "";
+  my $client = IO::Socket::INET->new(Proto => "tcp",
+          PeerAddr=> $destinationIp,
+          PeerPort => $port)
+  or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
+#  print <$client>;
 
     while($ligne ne "quit\n"){
-		#On attend les messages du server
-		$input = <$client>;
+    #On attend les messages du server
+    $input = <$client>;
 
-		#Afficher le message du server dans la console
-		#de l'utilisateur
+    #Afficher le message du server dans la console
+    #de l'utilisateur
 
-		print $input;
+    print $input;
 
-		#Attente que l'utilisateur entre une chaîne de charactère
+    #Attente que l'utilisateur entre une chaîne de charactère
 
-		$ligne = <STDIN>;
+    $ligne = <STDIN>;
 
-		#Envoie de la chaine au server
+    #Envoie de la chaine au server
 
-		if ($ligne eq "quit\n"){
-			print $client "quit\r\n";
-		}
-		else{
-			print $client $ligne;
-		}
-	}
+    if ($ligne eq "quit\n"){
+      print $client "quit\r\n";
+    }
+    else{
+      print $client $ligne;
+    }
+  }
 
-	#Affiche la dernière chaîne entrée
+  #Affiche la dernière chaîne entrée
 
-	print <$client>;
+  print <$client>;
 
-	#Fin de connection
+  #Fin de connection
 
-	close ($client);
+  close ($client);
 }
 
 if ($server == 1) {
-  my $inputServer = "";
+  my $serverInput = "";
   $serveur = IO::Socket::INET->new( Proto => "tcp",
                                     LocalPort => $port,
                                     Listen => SOMAXCONN,
@@ -100,65 +100,79 @@ if ($server == 1) {
     print "Connection $i au serveur\n";
     #On envoie un mot de bienvenue à l'ordinateur distant
 
-    my $message = "Bienvenue au jeu de Monty Hall!.";#"Une des trois portes numérotées de 1 à 3 cache une voiture, les deux autres cachent une chèvres. Choisissez un nombre entre 1 et 3 :";
+    my $message = "Bienvenue au jeu de Monty Hall!. Une des trois portes numérotées de 1 à 3 cache une voiture, les deux autres cachent une chèvres. Choisissez un nombre entre 1 et 3 : ";
 
     print $connection $message;
     #On intercepte l'information envoyé par l'ordinateur
     #distant, tant que celui-ci n'entre pas la chaine de
     #caractère quit suivie de la toucher entrée
-    while($inputServer ne "quit\r\n")
+    while($serverInput ne "quit\r\n")
     {
-      print "All0";
-      my $voiture = rand(3) + 1;
+      $serverInput = <$connection>;
+
+      my $voiture = int(rand(3)) + 1;
       my $chevreUn = 0;
       my $chevreDeux = 0;
 
-      switch ($voiture) {
-	    case 1 { $chevreUn = 2; $chevreDeux = 3;}
-        case 2 { $chevreUn = 1; $chevreDeux = 3;}
-        case 3 { $chevreun = 1; $chevreDeux = 2;}
+      if ($voiture == 1) {
+        $chevreUn = 2;
+        $chevreDeux = 3;
       }
 
+      if ($voiture == 2) {
+        $chevreUn = 1;
+        $chevreDeux = 3;
+      }
+
+      if ($voiture == 3) {
+        $chevreUn = 1;
+        $chevreDeux = 2;
+      }
       #On attend que l'ordinateur distant nous envoie
       #des caractères
-      $input = <$connection>;
+      $serverInput =~ s/\r|\n//g;
 
-      if ($inputServer eq "3" || $inputServer eq "2" || $inputServer eq "1") {
-     	print $connection "Vous avez choisi la porte " .$inputServer. ".\n\n";
+      if ($serverInput == "3" || $serverInput == "2" || $serverInput == "1") {
+        print $connection "Vous avez choisi la porte $serverInput.\n\n";
 
         my $porteAnimateur = 0;
         my $porteAlternative = 0;
-        if ($inputServer eq $chevreUn) {
+
+        if ($serverInput eq $chevreUn) {
           $porteAnimateur = $chevreDeux;
           $porteAlternative = $voiture;
-        } elsif ($inputServer eq $chevreDeux){
+        } elsif ($serverInput eq $chevreDeux){
           $porteAnimateur = $chevreUn;
           $porteAlternative = $voiture;
         } else {
+
           $porteAnimateur = $chevreUn;
           $porteAlternative = $chevreDeux;
         }
+        my $test = sprintf "Le présentateur ouvre la porte %d, qui cachait une chèvre !
+Garderez-vous la porte $serverInput ou changerez-vous pour la porte %d.
+Choisissez entre $serverInput (rester) et %d (changer) : ", $porteAnimateur, $porteAlternative, $porteAlternative;
 
-        print $connection "Le présentateur ouvre la porte " .$porteAnimateur . ", qui cachait une chèvre !\n";
-        print $connection "Garderez-vous la porte". $inputServer." ou changerez-vous pour la porte " .$porteAlternative.".\n";
+        print $connection $test;
 
-        print $connection "Choisissez entre ".$inputServer." (rester) et " .$porteAlternative." (changer) : ";
-        my $oldInput = $input;
+        my $oldInput = $serverInput;
 
-        while ($oldInput eq $input || $input eq $porteAlternative) {
-          $inputServer = <$connection>;
+        while ($oldInput eq $serverInput || $serverInput eq $porteAlternative) {
+          $serverInput = <$connection>;
         }
 
-        if ($inputServer eq $voiture) {
-	      print $connection "Félicitations! Vous avez gagné la voiture!";
-	    } else {
-	      print $connection "Hélas, vous ne gagnez qu'une chèvre...";
-	    }
+        $serverInput =~ s/\r|\n//g;
+
+        if ($serverInput eq $voiture) {
+        print $connection "Félicitations! Vous avez gagné la voiture!";
+      } else {
+        print $connection "Hélas, vous ne gagnez qu'une chèvre...";
+      }
 
       }
     }
     #On réinitialise la variable input
-    $inputServer = "";
+    $serverInput = "";
     #On ferme la connection
     close($connection);
   }
