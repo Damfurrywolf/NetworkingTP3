@@ -44,26 +44,55 @@ if ($help != 0 && $port == 0 && $server == 0 && $destinationIp == "") {
 }
 
 if ($server == 0){
+
+  print "Login as user";
+
   my $input = "";
+  my $oldLigne = "";
   my $ligne = "";
   my $client = IO::Socket::INET->new(Proto => "tcp",
           PeerAddr => $destinationIp,
           PeerPort => $port)
   or ErrorManager("Impossible de se connecter sur le port $port à l'adresse $destionationIp");
 
+  print "Connected to server";
+
   while ($ligne ne "quit\n"){
     #On attend les messages du server
     #   $input = <$client>;
-    $client->recv($input, 2048);
-    #Afficher le message du server dans la console
-    #de l'utilisateur
+    while ($input eq ""){
 
-    print $input;
+    print "waiting for server message";
+
+    $client->recv($input, 2048);
+      #Afficher le message du server dans la console
+      #de l'utilisateur
+    
+      print $input;
+
+    print "End of server message sequence";
+
+    }
 
     #Attente que l'utilisateur entre une chaîne de charactère
+    if ($ligne eq ""){
 
-    $ligne = <STDIN>;
-    $client->send($ligne);
+      print "entering text sequence";
+
+      $ligne = <>;
+
+      print "End of enering text";
+
+    }
+    if ($ligne ne $oldLigne){
+
+      print "Sending entered text";
+
+      $client->send($ligne);
+
+      print "End of sending entered text";
+
+    }
     #Envoie de la chaine au server
 
     if ($ligne eq "quit\n"){
@@ -72,6 +101,9 @@ if ($server == 0){
     else{
       print $client->send($ligne);
     }
+      $input = "";
+      $oldLigne = $ligne;
+      $ligne = "";
   }
 
   #Affiche la dernière chaîne entrée
