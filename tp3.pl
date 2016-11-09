@@ -2,7 +2,6 @@
 
 use Getopt::Long;
 use IO::Socket;
-use Switch;
 
 #Déclaration des variables
 my $server=0;
@@ -48,15 +47,14 @@ if ($server == 0){
   my $input = "";
   my $ligne = "";
   my $client = IO::Socket::INET->new(Proto => "tcp",
-          PeerAddr=> $destinationIp,
+          PeerAddr => $destinationIp,
           PeerPort => $port)
-  or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
-#  print <$client>;
+  or ErrorManager("Impossible de se connecter sur le port $port à l'adresse $destionationIp");
 
-    while($ligne ne "quit\n"){
+  while ($ligne ne "quit\n"){
     #On attend les messages du server
-    $input = <$client>;
-
+    #   $input = <$client>;
+    $client->recv($input, 2048);
     #Afficher le message du server dans la console
     #de l'utilisateur
 
@@ -65,14 +63,14 @@ if ($server == 0){
     #Attente que l'utilisateur entre une chaîne de charactère
 
     $ligne = <STDIN>;
-
+    $client->send($ligne);
     #Envoie de la chaine au server
 
     if ($ligne eq "quit\n"){
-      print $client "quit\r\n";
+      print $client->send("quit\r\n");
     }
     else{
-      print $client $ligne;
+      print $client->send($ligne);
     }
   }
 
@@ -102,13 +100,15 @@ if ($server == 1) {
 
     my $message = "Bienvenue au jeu de Monty Hall!. Une des trois portes numérotées de 1 à 3 cache une voiture, les deux autres cachent une chèvres. Choisissez un nombre entre 1 et 3 : ";
 
-    print $connection $message;
+    #  print $connection "$message";
+    $connection->send($message);
     #On intercepte l'information envoyé par l'ordinateur
     #distant, tant que celui-ci n'entre pas la chaine de
     #caractère quit suivie de la toucher entrée
     while($serverInput ne "quit\r\n")
     {
-      $serverInput = <$connection>;
+    # $serverInput = <$connection>;
+      $connection->recv($serverInput, 2048);
 
       my $voiture = int(rand(3)) + 1;
       my $chevreUn = 0;
@@ -149,24 +149,25 @@ if ($server == 1) {
           $porteAnimateur = $chevreUn;
           $porteAlternative = $chevreDeux;
         }
-        my $test = sprintf "Le présentateur ouvre la porte %d, qui cachait une chèvre !
+        my $messageDeux = sprintf "Le présentateur ouvre la porte %d, qui cachait une chèvre !
 Garderez-vous la porte $serverInput ou changerez-vous pour la porte %d.
 Choisissez entre $serverInput (rester) et %d (changer) : ", $porteAnimateur, $porteAlternative, $porteAlternative;
 
-        print $connection $test;
+        my $test = "allo";
+        $connection->send($test);
 
         my $oldInput = $serverInput;
 
         while ($oldInput eq $serverInput || $serverInput eq $porteAlternative) {
-          $serverInput = <$connection>;
+          $connection->recv($serverInput, 2048);
         }
 
         $serverInput =~ s/\r|\n//g;
 
         if ($serverInput eq $voiture) {
-        print $connection "Félicitations! Vous avez gagné la voiture!";
+        print $connection->send("Félicitations! Vous avez gagné la voiture!");
       } else {
-        print $connection "Hélas, vous ne gagnez qu'une chèvre...";
+        print $connection->send("Hélas, vous ne gagnez qu'une chèvre...");
       }
 
       }
