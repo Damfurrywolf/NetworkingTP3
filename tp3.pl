@@ -97,8 +97,10 @@ if ($server == 1) {
     $i++;
     print "Connection $i au serveur\n";
     #On envoie un mot de bienvenue à l'ordinateur distant
-
-    my $message = "Bienvenue au jeu de Monty Hall!. Une des trois portes numérotées de 1 à 3 cache une voiture, les deux autres cachent une chèvres. Choisissez un nombre entre 1 et 3 : ";
+    my $message = "Bienvenue au jeu de Monty Hall!.
+Une des trois portes numérotées de 1 à 3 cache une voiture,
+les deux autres cachent une chèvres.
+Choisissez un nombre entre 1 et 3 : ";
 
     #  print $connection "$message";
     $connection->send($message);
@@ -133,7 +135,6 @@ if ($server == 1) {
       $serverInput =~ s/\r|\n//g;
 
       if ($serverInput == "3" || $serverInput == "2" || $serverInput == "1") {
-        print $connection "Vous avez choisi la porte $serverInput.\n\n";
 
         my $porteAnimateur = 0;
         my $porteAlternative = 0;
@@ -149,12 +150,12 @@ if ($server == 1) {
           $porteAnimateur = $chevreUn;
           $porteAlternative = $chevreDeux;
         }
-        my $messageDeux = sprintf "Le présentateur ouvre la porte %d, qui cachait une chèvre !
+        my $messageDeux = sprintf "Vous avez choisi la porte $serverInput.
+Le présentateur ouvre la porte %d, qui cachait une chèvre !
 Garderez-vous la porte $serverInput ou changerez-vous pour la porte %d.
 Choisissez entre $serverInput (rester) et %d (changer) : ", $porteAnimateur, $porteAlternative, $porteAlternative;
 
-        my $test = "allo";
-        $connection->send($test);
+        $connection->send($messageDeux);
 
         my $oldInput = $serverInput;
 
