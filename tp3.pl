@@ -51,7 +51,9 @@ if ($server == 0){
 					PeerAddr=> $destinationIp,
 					PeerPort => $port)
 	or die "Impossible de se connecter sur le port $port à l'adresse $destionationIp";
-	while($ligne ne "quit\n"){
+	print <$client>;
+
+    while($ligne ne "quit\n"){
 		#On attend les messages du server
 		$input = <$client>;
 
@@ -84,6 +86,7 @@ if ($server == 0){
 }
 
 if ($server == 1) {
+  my $inputServer = "";
   $serveur = IO::Socket::INET->new( Proto => "tcp",
                                     LocalPort => $port,
                                     Listen => SOMAXCONN,
@@ -103,8 +106,7 @@ if ($server == 1) {
     #On intercepte l'information envoyé par l'ordinateur
     #distant, tant que celui-ci n'entre pas la chaine de
     #caractère quit suivie de la toucher entrée
-    =begin comment
-    while($input ne "quit\r\n")
+    while($inputServer ne "quit\r\n")
     {
       print "All0";
       my $voiture = rand(3) + 1;
@@ -121,15 +123,15 @@ if ($server == 1) {
       #des caractères
       $input = <$connection>;
 
-      if ($input eq "3" || $input eq "2" || $input eq "1") {
-	print $connection "Vous avez choisi la porte " .$input. ".\n\n";
+      if ($inputServer eq "3" || $inputServer eq "2" || $inputServer eq "1") {
+     	print $connection "Vous avez choisi la porte " .$inputServer. ".\n\n";
 
         my $porteAnimateur = 0;
         my $porteAlternative = 0;
-        if ($input eq $chevreUn) {
+        if ($inputServer eq $chevreUn) {
           $porteAnimateur = $chevreDeux;
           $porteAlternative = $voiture;
-        } elsif ($input eq $chevreDeux){
+        } elsif ($inputServer eq $chevreDeux){
           $porteAnimateur = $chevreUn;
           $porteAlternative = $voiture;
         } else {
@@ -138,32 +140,25 @@ if ($server == 1) {
         }
 
         print $connection "Le présentateur ouvre la porte " .$porteAnimateur . ", qui cachait une chèvre !\n";
-        print $connection "Garderez-vous la porte". $input." ou changerez-vous pour la porte " .$porteAlternative.".\n";
+        print $connection "Garderez-vous la porte". $inputServer." ou changerez-vous pour la porte " .$porteAlternative.".\n";
 
-        print $connection "Choisissez entre ".$input." (rester) et " .$porteAlternative." (changer) : ";
+        print $connection "Choisissez entre ".$inputServer." (rester) et " .$porteAlternative." (changer) : ";
         my $oldInput = $input;
 
         while ($oldInput eq $input || $input eq $porteAlternative) {
-          $input = <$connection>;
+          $inputServer = <$connection>;
         }
 
-        if ($input eq $voiture) {
-	  print $connection "Félicitations! Vous avez gagné la voiture!";
-	} else {
-	  print $connection "Hélas, vous ne gagnez qu'une chèvre...";
-	}
+        if ($inputServer eq $voiture) {
+	      print $connection "Félicitations! Vous avez gagné la voiture!";
+	    } else {
+	      print $connection "Hélas, vous ne gagnez qu'une chèvre...";
+	    }
 
       }
-      =end comment
-      #Affichage de la chaine dans la console du serveur
-      print "$input";
-      #Le serveur envoie une chaine de caractère à
-      #l'ordinateur distant
-      print $connection "Merci pour cette chaine\n";
     }
-
     #On réinitialise la variable input
-    $input = "";
+    $inputServer = "";
     #On ferme la connection
     close($connection);
   }
