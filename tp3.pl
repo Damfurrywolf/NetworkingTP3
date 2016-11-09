@@ -74,10 +74,6 @@ if ($server == 0){
     }
   }
 
-  #Affiche la dernière chaîne entrée
-
-  print <$client>;
-
   #Fin de connection
 
   close ($client);
